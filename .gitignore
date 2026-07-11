@@ -1,0 +1,17 @@
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ipynb_checkpoints/
+
+# Local/editor files
+.env
+.DS_Store
+Thumbs.db
+
+# Rolling artifact backups produced by train_model.py
+*.joblib.bak
+
+# Large embedded notebook artifact, not needed to run the service
+notebooks/artifacts/*.pkl

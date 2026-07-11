@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zatch Hybrid Recommendation Engine</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+
+<body>
+<main class="container">
+    <header class="page-header">
+        <h1>Zatch Hybrid Recommendation Engine</h1>
+        <p>Real-time reel and product recommendations, backed entirely by live MongoDB.</p>
+    </header>
+
+    <section class="panel">
+        <h2>API Key</h2>
+        <p>Only needed if <code>API_KEY</code> is configured on the server. Sent as the <code>X-API-Key</code> header on every request below.</p>
+        <div class="form-grid">
+            <label>
+                API Key (optional)
+                <input id="api_key" type="password" placeholder="X-API-Key" autocomplete="off">
+            </label>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Reel Recommendations</h2>
+        <p>Use real Zatch IDs: a MongoDB user _id, username, or email, and (optionally) the bit/live-session currently being viewed.</p>
+        <div class="form-grid">
+            <label>
+                User ID / Username / Email
+                <input id="user_id" type="text" placeholder="MongoDB userId, username, or email">
+            </label>
+
+            <label>
+                Current Bit / Live Session ID
+                <input id="video_id" type="text" placeholder="optional">
+            </label>
+
+            <label>
+                Results
+                <input id="top_n" type="number" value="10" min="1" max="50">
+            </label>
+        </div>
+
+        <div class="actions two-actions">
+            <button id="recommendBtn" type="button">Get Recommendations</button>
+            <button id="trendingBtn" type="button" class="secondary">Trending</button>
+            <button id="healthBtn" type="button" class="secondary">Health</button>
+        </div>
+    </section>
+
+    <section class="panel">
+        <h2>Live Zatch MongoDB (dedicated endpoint)</h2>
+        <p>Same live signal-based recommendations via the dedicated <code>/zatch/reel-recommendations</code> endpoint.</p>
+        <div class="form-grid">
+            <label>
+                Zatch User ID / Username / Email
+                <input id="zatch_user_id" type="text" placeholder="MongoDB userId or username">
+            </label>
+
+            <label>
+                Current Bit / Live Session ID
+                <input id="zatch_reel_id" type="text" placeholder="MongoDB bit or liveSession id">
+            </label>
+
+            <label>
+                Results
+                <input id="zatch_limit" type="number" value="10" min="1" max="50">
+            </label>
+        </div>
+
+        <div class="actions two-actions">
+            <button id="zatchRecommendBtn" type="button">Get Zatch Recommendations</button>
+            <button id="zatchHealthBtn" type="button" class="secondary">Zatch Health</button>
+        </div>
+    </section>
+
+    <section id="results" class="results"></section>
+</main>
+
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+</body>
+</html>
