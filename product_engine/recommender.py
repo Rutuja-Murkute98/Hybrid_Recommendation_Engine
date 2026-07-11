@@ -11,7 +11,7 @@ from typing import Any
 from bson import ObjectId
 from cachetools import TTLCache, cached
 
-from .zatch_mongo_recommender import get_db
+from .zatch_mongo_recommender import _shuffle_within_score_bands, get_db
 
 
 logger = logging.getLogger(__name__)
@@ -564,7 +564,10 @@ def get_product_recommendations(
         }
         scored.append((score, product, breakdown, signals))
 
-    scored.sort(key=lambda item: item[0], reverse=True)
+    # Weighted scores here live in ~[0, 1.05] (WEIGHTS sums to 1.0 plus a
+    # small isTopPick bonus) — a much finer scale than the reel engine's
+    # signal scores, hence the smaller band_width.
+    scored = _shuffle_within_score_bands(scored, score_fn=lambda item: item[0], band_width=0.05)
     recommendations = [
         _format_product(product, rank, score, breakdown, signals)
         for rank, (score, product, breakdown, signals) in enumerate(scored[:limit], start=1)

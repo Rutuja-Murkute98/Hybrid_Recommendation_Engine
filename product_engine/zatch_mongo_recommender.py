@@ -3,6 +3,7 @@ from __future__ import annotations
 import datetime as dt
 import logging
 import os
+import random
 import threading
 import time
 from functools import lru_cache
@@ -179,6 +180,31 @@ def _normalize_score(score: float, max_score: float) -> float:
     if max_score <= 0:
         return 0.0
     return round(min(1.0, score / max_score), 4)
+
+
+def _shuffle_within_score_bands(items: list, score_fn, band_width: float = 1.0) -> list:
+    """Rank by score (descending) but shuffle randomly within each same-score
+    band instead of a strict stable sort.
+
+    A thin, early-stage catalog produces a lot of exact or near ties
+    (popularity fallback especially, where most items start at 0 views/
+    likes) — a plain sort would show every user the identical ordering
+    forever, biasing future popularity toward whatever happened to rank
+    first. Items that are meaningfully better still always rank above
+    meaningfully worse ones; only ties/near-ties within `band_width` of
+    each other get reordered, and differently on every call.
+    """
+    bands: dict[int, list] = {}
+    for item in items:
+        band = int(score_fn(item) // band_width) if band_width > 0 else 0
+        bands.setdefault(band, []).append(item)
+
+    ordered = []
+    for band in sorted(bands, reverse=True):
+        band_items = bands[band]
+        random.shuffle(band_items)
+        ordered.extend(band_items)
+    return ordered
 
 
 def _make_client(uri: str) -> MongoClient:
@@ -676,7 +702,7 @@ def _popular_fallback(
             labels.append("trending")
         fallback.append(("live_session", session, score, labels))
 
-    fallback.sort(key=lambda item: item[2], reverse=True)
+    fallback = _shuffle_within_score_bands(fallback, score_fn=lambda item: item[2], band_width=1.0)
     formatted = []
     for rank, (kind, document, score, labels) in enumerate(fallback[:limit], start=1):
         if kind == "bit":
@@ -729,7 +755,7 @@ def get_zatch_reel_recommendations(
             if score > 0:
                 scored.append(("live_session", session, score, labels))
 
-    scored.sort(key=lambda item: item[2], reverse=True)
+    scored = _shuffle_within_score_bands(scored, score_fn=lambda item: item[2], band_width=1.0)
 
     recommendations = []
     for rank, (kind, document, score, labels) in enumerate(scored[:limit], start=1):

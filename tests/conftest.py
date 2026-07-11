@@ -7,10 +7,16 @@ from pathlib import Path
 # Must run before `product_engine.zatch_mongo_recommender` (and anything
 # importing it) is loaded: python-dotenv's load_dotenv() won't override an
 # already-set env var, so this keeps every test in this suite off the real
-# Atlas cluster even though a live MONGO_URI is present in the repo's root .env.
+# Atlas cluster and real API keys even when a live .env is present in the repo
+# root. Setting these to "" (not popping) is deliberate: popping would leave
+# them unset, and load_dotenv() would then fill them back in from .env the
+# moment zatch_mongo_recommender is first imported — an empty string still
+# counts as "already set" to load_dotenv, so it's the only way to keep .env
+# from leaking into the test session at all.
 os.environ["MONGO_URI"] = "mongodb://localhost:1/?serverSelectionTimeoutMS=200"
 os.environ["MONGO_TIMEOUT_MS"] = "200"
-os.environ.pop("ADMIN_API_KEY", None)
+os.environ["ADMIN_API_KEY"] = ""
+os.environ["API_KEY"] = ""
 
 ROOT = Path(__file__).resolve().parents[1]
 if str(ROOT) not in sys.path:
