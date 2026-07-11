@@ -15,3 +15,6 @@ Thumbs.db
 
 # Large embedded notebook artifact, not needed to run the service
 notebooks/artifacts/*.pkl
+
+# Generated documentation deliverable, not project source
+*.pdf
