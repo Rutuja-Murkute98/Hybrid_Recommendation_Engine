@@ -10,7 +10,19 @@ from flask_limiter.util import get_remote_address
 # Created here (not in app.py) and initialized later via limiter.init_app(app) so
 # that blueprint route modules (e.g. product_engine/routes.py) can import and use
 # @limiter.limit(...) without a circular import against app.py.
-limiter = Limiter(get_remote_address, default_limits=["60 per minute"], storage_uri="memory://")
+#
+# Keyed by remote IP, which means every request proxied through one backend
+# server (the intended integration pattern - your app's backend calls this
+# service, end-user devices never do) shares a single bucket. Default raised
+# from the framework's 60/min to something realistic for that pattern, and
+# left tunable via env var since "realistic" depends entirely on your real
+# traffic volume - raise RATE_LIMIT_DEFAULT in Render's environment if your
+# backend legitimately needs more.
+limiter = Limiter(
+    get_remote_address,
+    default_limits=[os.getenv("RATE_LIMIT_DEFAULT", "300 per minute")],
+    storage_uri="memory://",
+)
 
 
 def require_api_key(req):

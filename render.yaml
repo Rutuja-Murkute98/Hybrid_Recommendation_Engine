@@ -32,3 +32,5 @@ services:
         value: "30"
       - key: ALLOWED_ORIGINS
         value: "*"
+      - key: RATE_LIMIT_DEFAULT
+        value: "300 per minute"
